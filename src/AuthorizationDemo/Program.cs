@@ -32,9 +32,13 @@ builder.Services
 // --- Authorization (policy-based) ---
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy(Policies.CanAccessCompany, policy =>
-        policy.AddRequirements(new CompanyAccessRequirement()));
+        policy.AddRequirements(new CompanyAccessRequirement()))
+    .AddPolicy(Policies.CanCreateInvoice, policy =>
+        policy.AddRequirements(new InvoiceCreateRequirement()));
 
 builder.Services.AddSingleton<IAuthorizationHandler, CompanyAccessHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, InvoiceCreateHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, InvoiceAmountLimitHandler>();
 
 // --- Swagger ---
 builder.Services.AddEndpointsApiExplorer();
@@ -69,5 +73,6 @@ app.UseAuthorization();
 
 app.MapAuthEndpoints();
 app.MapCompanyEndpoints();
+app.MapInvoiceEndpoints();
 
 app.Run();
