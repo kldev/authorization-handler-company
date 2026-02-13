@@ -10,6 +10,7 @@ Projekt pokazuje jak zbudowac granularny system uprawnien oparty o role, zasoby 
 - JWT Bearer Authentication (HMAC-SHA256)
 - Policy-based Authorization z wieloma handlerami
 - Swagger / OpenAPI (Swashbuckle)
+- OpenTelemetry (tracing via Alloy)
 
 ## Uruchomienie
 
@@ -24,7 +25,7 @@ Swagger UI: [http://localhost:5100/swagger](http://localhost:5100/swagger)
 
 ```
 src/AuthorizationDemo/
-├── Program.cs                          # Konfiguracja DI, JWT, polityk
+├── Program.cs                          # Konfiguracja DI, JWT, polityk, rejestracja serwisow
 ├── Authorization/
 │   ├── Roles.cs                        # Root, PolandManager, InternationalManager, FinancePerson
 │   ├── Policies.cs                     # CanAccessCompany, CanCreateInvoice
@@ -39,10 +40,23 @@ src/AuthorizationDemo/
 ├── Repositories/
 │   ├── ICompanyRepository.cs           # Interfejs repozytorium
 │   └── FakeCompanyRepository.cs        # 10 firm w pamieci (5 PL + 5 zagranicznych)
+├── Extensions/
+│   ├── AuthenticationExtensions.cs     # Konfiguracja JWT Bearer (issuer, audience, klucz)
+│   ├── AuthorizationExtensions.cs      # Rejestracja polityk i handlerow autoryzacji
+│   ├── ClaimsPrincipalExtensions.cs    # Konwersja claimow na dictionary (endpoint /user/me)
+│   ├── ObservabilityExtensions.cs      # OpenTelemetry — tracing, logging, metryki (OTLP → Alloy)
+│   └── SwaggerExtensions.cs           # Swagger z obsluga JWT Bearer token
+├── Services/
+│   ├── IAuthTokenService.cs            # Interfejs + DTO (LoginRequest, LoginResponse)
+│   ├── AuthTokenService.cs             # Generowanie tokenow JWT
+│   ├── ICompanyService.cs              # Interfejs serwisu firm
+│   ├── CompanyService.cs               # Logika autoryzacji dostepu do firm
+│   ├── IInvoiceService.cs              # Interfejs + result type (InvoiceCreateResult)
+│   └── InvoiceService.cs               # Logika tworzenia faktur z autoryzacja
 └── Endpoints/
-    ├── AuthEndpoints.cs                # POST /auth/login, GET /auth/roles
-    ├── CompanyEndpoints.cs             # GET /api/companies, GET /api/companies/{id}
-    └── InvoiceEndpoints.cs             # POST /api/invoices
+    ├── AuthEndpoints.cs                # POST /auth/login, GET /auth/roles — deleguje do AuthTokenService
+    ├── CompanyEndpoints.cs             # GET /api/companies, GET /api/companies/{id} — deleguje do CompanyService
+    └── InvoiceEndpoints.cs             # POST /api/invoices — deleguje do InvoiceService
 ```
 
 ## Role i uprawnienia
