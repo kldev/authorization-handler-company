@@ -1,18 +1,16 @@
-using System.Text;
-using AuthorizationDemo.Authorization;
 using AuthorizationDemo.Endpoints;
 using AuthorizationDemo.Extensions;
-using AuthorizationDemo.Repositories;
 using AuthorizationDemo.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.IdentityModel.Tokens;
-using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // --- Repositories ---
-builder.Services.AddSingleton<ICompanyRepository, FakeCompanyRepository>();
+var postgresConnectionString = builder.Configuration.GetConnectionString("PostgreSQL");
+if (!string.IsNullOrEmpty(postgresConnectionString))
+    builder.Services.AddPostgresCompanyRepository(postgresConnectionString);
+else
+    builder.Services.AddFakeCompanyRepository();
+
 builder.Services.AddScoped<IAuthTokenService, AuthTokenService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
@@ -47,5 +45,8 @@ app.UseAuthorization();
 app.MapAuthEndpoints();
 app.MapCompanyEndpoints();
 app.MapInvoiceEndpoints();
+
+if (!string.IsNullOrEmpty(postgresConnectionString))
+    await app.SeedPostgresAsync();
 
 app.Run();

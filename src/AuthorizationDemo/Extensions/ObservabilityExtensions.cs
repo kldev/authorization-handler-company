@@ -23,6 +23,7 @@ public static class ObservabilityExtensions
                 .WithTracing(pb =>
                 {
                     pb.AddSource("AuthorizationDemo")
+                        .AddSource("Npgsql")
                         .AddAspNetCoreInstrumentation()
                         .AddHttpClientInstrumentation()
                         .AddOtlpExporter(options =>
@@ -41,6 +42,7 @@ public static class ObservabilityExtensions
                 {
                     pbx.AddAspNetCoreInstrumentation()
                         .AddHttpClientInstrumentation()
+                        .AddRuntimeInstrumentation()
                         .AddOtlpExporter(options =>
                         {
                             options.Endpoint = new Uri(observabilityConfig.ExporterUrl);

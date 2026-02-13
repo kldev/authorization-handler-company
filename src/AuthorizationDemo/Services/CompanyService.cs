@@ -29,6 +29,10 @@ public class CompanyService(
                 log.LogInformation("AuthorizeAsync successful for {User} and company {Company}", user.Identity?.Name, company.Name);
                 authorized.Add(company);
             }
+            else
+            {
+                log.LogInformation("AuthorizeAsync forbidden for {User} and company {Company}", user.Identity?.Name, company.Name);
+            }
         }
 
         return authorized;
@@ -50,7 +54,9 @@ public class CompanyService(
         {
             return (company, true);
         }
-
+        
+        log.LogInformation("AuthorizeAsync forbidden for {User} and company {Company}", user.Identity?.Name, company.Name);
+        
         return (new Company() { Id = Guid.NewGuid(), Name = "", City = "", Country = "", TaxId = "" }, false);
     }
 }
