@@ -35,6 +35,11 @@ var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseReDoc(options =>
+{
+    options.SpecUrl = "/swagger/v1/swagger.json";
+    options.RoutePrefix = "docs";
+});
 
 app.UseAuthentication();
 app.UseAuthorization();

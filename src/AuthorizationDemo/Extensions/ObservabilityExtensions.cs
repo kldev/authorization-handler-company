@@ -63,9 +63,11 @@ public static class ObservabilityExtensions
                 options.IncludeScopes = true;
                 options.IncludeFormattedMessage = true;
             });
-
-            builder.Services.AddSingleton(TracerProvider.Default.GetTracer("AuthorizationDemo", "1.0.0"));
         }
+
+        // Always register Tracer so DI resolves even when observability is disabled.
+        // TracerProvider.Default returns a no-op provider when OTel is not configured.
+        builder.Services.AddSingleton(TracerProvider.Default.GetTracer("AuthorizationDemo", "1.0.0"));
 
         return builder;
     }

@@ -34,7 +34,8 @@ public class CompanyService(
         return authorized;
     }
 
-    public async Task<(Company? company, bool authorized)> GetAuthorizedCompanyByIdAsync(Guid id, ClaimsPrincipal user, CancellationToken ct)
+    public async Task<(Company? company, bool authorized)> GetAuthorizedCompanyByIdAsync(Guid id, ClaimsPrincipal user,
+        CancellationToken ct)
     {
         using var span = tracer.StartActiveSpan("companiesGetById");
 
@@ -45,6 +46,11 @@ public class CompanyService(
             return (null, false);
 
         var result = await authService.AuthorizeAsync(user, company, Policies.CanAccessCompany);
-        return (company, result.Succeeded);
+        if (result.Succeeded)
+        {
+            return (company, true);
+        }
+
+        return (new Company() { Id = Guid.NewGuid(), Name = "", City = "", Country = "", TaxId = "" }, false);
     }
 }
