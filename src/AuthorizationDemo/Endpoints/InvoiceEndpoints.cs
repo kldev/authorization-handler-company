@@ -3,6 +3,7 @@ using AuthorizationDemo.Authorization;
 using AuthorizationDemo.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
+using OpenTelemetry.Trace;
 
 namespace AuthorizationDemo.Endpoints;
 
@@ -25,11 +26,19 @@ public static class InvoiceEndpoints
 
     private static async Task<Results<Created<InvoiceDto>, NotFound, ForbidHttpResult>> Create(
         CreateInvoiceRequest request,
+        ILoggerFactory factory,
+        Tracer tracer,
         ICompanyRepository repository,
         IAuthorizationService authService,
         ClaimsPrincipal user,
         CancellationToken ct)
     {
+        using var span = tracer.StartActiveSpan("invoiceCreate");
+
+        var log = factory.CreateLogger("InvoiceEndpoints");
+        log.IsEnabled(LogLevel.Information);
+        log.LogInformation("Create invoice");
+
         // 1. Can the user create an invoice for this amount?
         var canCreate = await authService.AuthorizeAsync(
             user, new InvoiceContext(request.Amount), Policies.CanCreateInvoice);
@@ -54,6 +63,8 @@ public static class InvoiceEndpoints
             company.Name,
             request.Amount,
             request.Description);
+
+        log.LogInformation("Invoice created");
 
         return TypedResults.Created($"/api/invoices/{invoice.Id}", invoice);
     }

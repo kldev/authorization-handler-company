@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using AuthorizationDemo.Authorization;
+using AuthorizationDemo.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.IdentityModel.Tokens;
 
@@ -24,8 +25,16 @@ public static class AuthEndpoints
             .AllowAnonymous()
             .WithSummary("List available roles");
 
+        group.MapGet("/user/me", (ClaimsPrincipal cp) => Results.Ok(cp.ToDictionary()))
+            .RequireAuthorization()
+            .WithSummary("Get user info");
+
         return app;
     }
+
+
+
+
 
     private static Results<Ok<LoginResponse>, BadRequest<string>> Login(
         LoginRequest request,
