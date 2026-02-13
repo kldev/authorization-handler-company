@@ -3,6 +3,7 @@ using AuthorizationDemo.Authorization;
 using AuthorizationDemo.Endpoints;
 using AuthorizationDemo.Extensions;
 using AuthorizationDemo.Repositories;
+using AuthorizationDemo.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -12,6 +13,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // --- Repositories ---
 builder.Services.AddSingleton<ICompanyRepository, FakeCompanyRepository>();
+builder.Services.AddScoped<IAuthTokenService, AuthTokenService>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 
 // --- Authentication (JWT) ---
 builder.Services.AddJwtBearer(builder.Configuration);
