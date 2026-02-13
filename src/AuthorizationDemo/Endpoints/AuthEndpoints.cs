@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json.Nodes;
 using AuthorizationDemo.Authorization;
 using AuthorizationDemo.Extensions;
 using AuthorizationDemo.Services;
@@ -14,11 +15,23 @@ public static class AuthEndpoints
 
         group.MapPost("/login", Login)
             .AllowAnonymous()
-            .WithSummary("Generate a JWT token for a given username and role");
+            .WithSummary("Generate a JWT token for a given username and role")
+            .WithOpenApi(op =>
+            {
+                op.RequestBody.Content["application/json"].Example = JsonNode.Parse(
+                    """{"username": "jan.kowalski", "role": "PolandManager"}""");
+                return op;
+            });
 
         group.MapGet("/roles", () => TypedResults.Ok(Roles.All))
             .AllowAnonymous()
-            .WithSummary("List available roles");
+            .WithSummary("List available roles")
+            .WithOpenApi(op =>
+            {
+                op.Responses["200"].Content["application/json"].Example = JsonNode.Parse(
+                    """["Root", "PolandManager", "InternationalManager", "FinancePerson"]""");
+                return op;
+            });
 
         group.MapGet("/user/me", (ClaimsPrincipal cp) => Results.Ok(cp.ToDictionary()))
             .RequireAuthorization()

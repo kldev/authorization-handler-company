@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json.Nodes;
 using AuthorizationDemo.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -16,7 +17,19 @@ public static class InvoiceEndpoints
             .WithTags("Invoices");
 
         group.MapPost("/", Create)
-            .WithSummary("Create an invoice (FinancePerson up to 100k, Root unlimited)");
+            .WithSummary("Create an invoice (FinancePerson up to 100k, Root unlimited)")
+            .WithOpenApi(op =>
+            {
+                op.RequestBody.Content["application/json"].Example = JsonNode.Parse(
+                    """
+                    {
+                      "companyId": "a1b2c3d4-0001-0000-0000-000000000001",
+                      "amount": 49999.99,
+                      "description": "Quarterly IT infrastructure maintenance"
+                    }
+                    """);
+                return op;
+            });
 
         return app;
     }
