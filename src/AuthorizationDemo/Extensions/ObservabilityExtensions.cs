@@ -40,6 +40,10 @@ public static class ObservabilityExtensions
 
                 }).WithMetrics(pbx =>
                 {
+                    pbx.AddMeter("AuthorizationDemo");
+                    pbx.AddMeter("Microsoft.AspNetCore.Hosting");
+                    pbx.AddMeter("Microsoft.AspNetCore.Server.Kestrel");
+                    
                     pbx.AddAspNetCoreInstrumentation()
                         .AddHttpClientInstrumentation()
                         .AddRuntimeInstrumentation()

@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using System.Security.Claims;
 using System.Text.Json.Nodes;
 using AuthorizationDemo.Authorization;
@@ -9,6 +10,10 @@ namespace AuthorizationDemo.Endpoints;
 
 public static class AuthEndpoints
 {
+    private static readonly Meter LoginMeter = new("AuthorizationDemo", "1.0.0");
+    private static readonly Counter<int> LoginCounter =
+        LoginMeter.CreateCounter<int>("login.count", description: "Counts the number of logins");
+
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/auth").WithTags("Auth");
@@ -46,6 +51,7 @@ public static class AuthEndpoints
     {
         try
         {
+            LoginCounter.Add(1);
             var response = authTokenService.Login(request.Username, request.Role);
             return TypedResults.Ok(response);
         }
