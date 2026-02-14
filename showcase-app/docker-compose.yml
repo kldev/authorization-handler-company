@@ -11,6 +11,16 @@ services:
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     depends_on:
       - loki
+      - mimir
+    networks:
+      - loki
+  mimir:
+    image: grafana/mimir:latest
+    ports:
+      - "9009:9009"
+    volumes:
+      - ./mimir-config.yaml:/etc/mimir/config.yaml
+    command: -config.file=/etc/mimir/config.yaml
     networks:
       - loki
   loki:
@@ -45,6 +55,15 @@ services:
            url: http://loki:3100
            basicAuth: false
            isDefault: true
+           version: 1
+           editable: false
+         - name: Mimir
+           type: prometheus
+           access: proxy
+           orgId: 1
+           url: http://mimir:9009/prometheus
+           basicAuth: false
+           isDefault: false
            version: 1
            editable: false
          EOF

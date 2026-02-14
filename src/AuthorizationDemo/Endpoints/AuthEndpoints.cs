@@ -11,8 +11,12 @@ namespace AuthorizationDemo.Endpoints;
 public static class AuthEndpoints
 {
     private static readonly Meter LoginMeter = new("AuthorizationDemo", "1.0.0");
-    private static readonly Counter<int> LoginCounter =
-        LoginMeter.CreateCounter<int>("login.count", description: "Counts the number of logins");
+    private static int _loginCount;
+
+    static AuthEndpoints()
+    {
+        LoginMeter.CreateObservableGauge("login.count", () => _loginCount, description: "Total number of logins");
+    }
 
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
@@ -51,7 +55,7 @@ public static class AuthEndpoints
     {
         try
         {
-            LoginCounter.Add(1);
+            Interlocked.Increment(ref _loginCount);
             var response = authTokenService.Login(request.Username, request.Role);
             return TypedResults.Ok(response);
         }
